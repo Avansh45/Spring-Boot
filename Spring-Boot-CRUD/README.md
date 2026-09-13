@@ -3,13 +3,16 @@
 A RESTful CRUD (Create, Read, Update, Delete) application built using **Spring Boot, Spring Data JPA, Hibernate, and MySQL**.
 
 This project demonstrates how to build a layered Spring Boot application using **Controller, Service, and Repository architecture** and perform database operations using **Spring Data JPA**.
+
 ## 🚀 Features
 
 - Create a new student
 - Get a student by ID
 - Get all students
 - Update an existing student
-- Delete a student
+- Permanently delete a student
+- Soft delete a student
+- Exclude soft-deleted students from normal GET and UPDATE operations
 - Automatic ID generation using JPA
 - Unique email constraint
 - MySQL database integration
@@ -169,10 +172,11 @@ http://localhost:8080
 | Method | Endpoint | Description |
 |---|---|---|
 | `POST` | `/api/students` | Create a new student |
-| `GET` | `/api/students/get/{id}` | Get a student by ID |
-| `GET` | `/api/students/getAll` | Get all students |
-| `PUT` | `/api/students/update/{id}` | Update an existing student |
-| `DELETE` | `/api/students/delete/{id}` | Delete a student |
+| `GET` | `/api/students/get?id={id}` | Get a student by ID |
+| `GET` | `/api/students/getAll` | Get all non-deleted students |
+| `PUT` | `/api/students/update?id={id}` | Update an existing student |
+| `DELETE` | `/api/students/delete?id={id}` | Permanently delete a student |
+| `PATCH` | `/api/students/delete-soft?id={id}` | Soft delete a student |
 
 ## 🧪 API Testing
 
@@ -203,14 +207,13 @@ http://localhost:8080/api/students
 
 **Endpoint:**
 ```text
-http://localhost:8080/api/students/get/{id}
+http://localhost:8080/api/students/get?id={id}
 ```
 
 **Example:**
 ```text
-http://localhost:8080/api/students/get/1
+http://localhost:8080/api/students/get?id=1
 ```
-
 **Response:**
 ```json
 {
@@ -258,12 +261,12 @@ http://localhost:8080/api/students/getAll
 
 **Endpoint:**
 ```text
-http://localhost:8080/api/students/update/{id}
+http://localhost:8080/api/students/update?id={id}
 ```
 
 **Example:**
 ```text
-http://localhost:8080/api/students/update/1
+http://localhost:8080/api/students/update?id=1
 ```
 
 **Request Body:**
@@ -280,12 +283,12 @@ http://localhost:8080/api/students/update/1
 **Response:**
 ```json
 {
-    "id": 1,
-    "name": "Avansh Updated",
-    "email": "avansh.updated@example.com",
-    "age": 23,
-    "rollNo": 101,
-    "subject": "Computer Science"
+  "id": 1,
+  "name": "Avansh Updated",
+  "email": "avansh.updated@example.com",
+  "age": 23,
+  "rollNo": 101,
+  "subject": "Computer Science"
 }
 ```
 ### Delete Student
@@ -294,12 +297,12 @@ http://localhost:8080/api/students/update/1
 
 **Endpoint:**
 ```text
-http://localhost:8080/api/students/delete/{id}
+http://localhost:8080/api/students/delete?id={id}
 ```
 
 **Example:**
 ```text
-http://localhost:8080/api/students/delete/1
+http://localhost:8080/api/students/delete?id=1
 ```
 
 **Success Response:**
@@ -316,6 +319,39 @@ Student not found
 
 **Response Status:** `404 Not Found`
 
+### Soft Delete Student
+
+**Method:** `PATCH`
+
+**Endpoint:**
+```text
+http://localhost:8080/api/students/delete-soft?id={id}
+```
+
+**Example:**
+```text
+http://localhost:8080/api/students/delete-soft?id=1
+```
+
+**Success Response:**
+```text
+Student deleted(Softly) successfully
+```
+
+**Response Status:** `200 OK`
+
+**If Student Does Not Exist:**
+```text
+Student not found
+```
+
+**Response Status:** `404 Not Found`
+
+**How Soft Delete Works:**
+
+Instead of permanently removing the student from the database, the application sets the student's `deleted` field to `true`.
+
+Soft-deleted students are excluded from normal **Get Student**, **Get All Students**, and **Update Student** operations, while the record remains stored in the database.
 ## 💡 Concepts Demonstrated
 
 - REST API development using Spring Boot
@@ -329,6 +365,8 @@ Student not found
 - MySQL database integration
 - Hibernate automatic table management
 - Environment variables for database credentials
+- Soft delete using a boolean `deleted` flag
+- Spring Data JPA derived query methods for filtering non-deleted records
 
 ## 🔮 Future Improvements
 
@@ -336,7 +374,6 @@ Student not found
 - Add global exception handling
 - Implement pagination and sorting
 - Add search and filtering functionality
-- Implement **soft delete** for database entries instead of permanently deleting records
 - Add Spring Security and authentication
 - Add DTOs for request and response handling
 - Add unit and integration testing
